@@ -2,6 +2,9 @@
 
 ### *Autonomous Technical Documentation Agent*
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHimanix10%2FDocuMind&root-directory=frontend)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Himanix10/DocuMind)
+
 DocuMind AI is an autonomous, agentic system that continuously monitors repositories, parses complex codebases using semantic search and AST analysis, and auto-generates premium-grade technical documentation (`README.md`, `MODULES.md`, `API_SPECS.md`). It keeps your documentation perfectly synchronized with your actual code by autonomously opening Pull Requests when code changes are detected.
 
 ---
