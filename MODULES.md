@@ -1,33 +1,40 @@
-# Module Level Documentation: DocuMind AI
+# MODULES
+## Overview
+The DocuMind project consists of several modules, each responsible for a specific functionality. This document provides an overview of the purpose and functionality of each module.
 
-This document explains the core modules and internal logic of the **DocuMind AI** documentation agent.
+## Agent Module
+### agent.py
+The agent module contains a single function, `process_repository`, which is currently undocumented. Further information about its purpose and usage is not available.
 
-## `agent.py`
-**Purpose**: The central orchestration layer.
-- `start_analysis_loop()`: Listens for incoming webhook events or scheduled cron jobs.
-- `process_repository(repo_url)`: Coordinates the flow from scanning the repo, updating the vector memory, generating the docs, and committing the changes.
-- **Agentic Behavior**: Contains the decision-making logic to determine *if* a documentation update is required based on the significance of the code changes.
+## Generator Module
+### generator.py
+The generator module contains a class, `DocGenerator`, which is responsible for generating documentation. The class has the following methods:
+* `__init__`: Initializes the `DocGenerator` object.
+* `generate_readme`: Generates a comprehensive README.md based on the repository contents.
+* `generate_api_specs`: Generates an MODULES.md or API_SPECS.md based on the extracted AST data.
 
-## `scanner.py`
-**Purpose**: Codebase ingestion and parsing.
-- `analyze_structure(path)`: Recursively maps the directory structure, identifying key architectural layers (e.g., frontend, backend, database).
-- `extract_ast(file)`: Parses Python/JS/TS files into Abstract Syntax Trees to extract function signatures, classes, and docstrings.
-- `detect_diffs(old_commit, new_commit)`: Analyzes Git diffs to isolate modified logic, newly added modules, and deleted components.
+## Git Manager Module
+### git_manager.py
+The git manager module contains a class, `GitManager`, which handles Git-related operations. The class has the following methods:
+* `__init__`: Initializes the `GitManager` object.
+* `create_branch`: Creates and checks out a new branch for documentation updates.
+* `commit_docs`: Stages and commits changes to the current branch.
+* `push_and_create_pr`: Pushes the local branch and opens a Pull Request using PyGithub.
 
-## `generator.py`
-**Purpose**: Interfaces with the LLM to write developer-friendly documentation.
-- `generate_readme(context)`: Synthesizes high-level project goals, setup instructions, and tech stack into a `README.md`.
-- `generate_api_specs(routes)`: Formats extracted API routes into standardized markdown, including endpoints, methods, parameters, request/response examples, and error cases.
-- `update_stale_docs(existing_doc, changes)`: Intelligently merges new information into existing documentation without destroying custom developer notes.
+## Memory Module
+### memory.py
+The memory module contains a class, `RepositoryMemory`, which is responsible for embedding files and searching for semantic matches. The class has the following methods:
+* `__init__`: Initializes the `RepositoryMemory` object.
+* `embed_file`: Embeds a file's content into the vector DB for semantic search.
+* `semantic_search`: Searches the codebase for semantic matches to provide context to the LLM.
 
-## `memory.py`
-**Purpose**: Manages long-term repository context.
-- `embed_codebase()`: Chunks codebase files and converts them into embeddings.
-- `semantic_search(query)`: Allows the agent (or users via a Q&A interface) to find relevant code snippets and architecture patterns.
-- `track_architecture_evolution()`: Compares current architectural graphs with historical ones to automatically generate migration notes and changelogs.
+## Scanner Module
+### scanner.py
+The scanner module contains a class, `CodeScanner`, which analyzes the repository structure and extracts AST data. The class has the following methods:
+* `__init__`: Initializes the `CodeScanner` object.
+* `analyze_structure`: Returns a list of all relevant files in the repository.
+* `extract_ast`: Extracts classes, functions, and docstrings from a Python file.
 
-## `git_manager.py`
-**Purpose**: Handles repository version control operations.
-- `clone_and_branch()`: Creates a secure workspace for documentation updates.
-- `commit_changes(files_changed)`: Formats commit messages clearly (e.g., `docs: auto-update API specifications for v2.0`).
-- `create_pull_request()`: Interfaces with the GitHub API to open a PR, complete with a summary of the documentation changes, affected modules, and any breaking changes detected.
+## Webhook Server Module
+### webhook_server.py
+The webhook server module is currently empty and does not contain any classes or functions.
