@@ -4,7 +4,7 @@ import ast
 class CodeScanner:
     def __init__(self, repo_path):
         self.repo_path = repo_path
-        self.ignore_dirs = {'.git', '__pycache__', 'venv', 'env', 'node_modules', '.documind_db'}
+        self.ignore_dirs = {'.git', '__pycache__', 'venv', '.venv', 'env', 'node_modules', '.documind_db'}
     
     def analyze_structure(self):
         """Returns a list of all relevant files in the repository."""
