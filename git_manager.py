@@ -75,9 +75,14 @@ class GitManager:
             origin = self.repo.remote(name='origin')
             remote_url = list(origin.urls)[0]
             
-            # Create a custom authenticated URL
+            # Create a custom authenticated URL, stripping any existing credentials to avoid doubling them
             if remote_url.startswith("https://"):
-                auth_url = remote_url.replace("https://", f"https://{self.github_token}@")
+                url_without_protocol = remote_url[8:]
+                if "@" in url_without_protocol:
+                    clean_url = "https://" + url_without_protocol.split("@", 1)[1]
+                else:
+                    clean_url = remote_url
+                auth_url = clean_url.replace("https://", f"https://{self.github_token}@")
             else:
                 auth_url = remote_url
                 

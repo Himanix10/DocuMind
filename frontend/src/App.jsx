@@ -7,12 +7,15 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [serverStatus, setServerStatus] = useState('checking');
   const [logs, setLogs] = useState([]);
+  const [backendUrl, setBackendUrl] = useState(() => {
+    return import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  });
 
   // Check backend status
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/');
+        const response = await fetch(`${backendUrl}/`);
         if (response.ok) {
           setServerStatus('online');
         } else {
@@ -26,7 +29,7 @@ function App() {
     checkStatus();
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [backendUrl]);
 
   const addLog = (msg) => {
     setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
@@ -40,10 +43,10 @@ function App() {
     }
 
     setIsProcessing(true);
-    addLog(`Initiating autonomous scan for ${repoPath}...`);
+    addLog(`Initiating autonomous scan for ${repoName}...`);
 
     try {
-      const response = await fetch('http://localhost:8000/trigger', {
+      const response = await fetch(`${backendUrl}/trigger`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,6 +60,9 @@ function App() {
       const data = await response.json();
       if (response.ok) {
         addLog(data.message);
+        if (data.local_path) {
+          addLog(`Repository path on server: ${data.local_path}`);
+        }
         addLog('Agent is now running in the background...');
         
         // Simulate logs for the UI
@@ -111,7 +117,21 @@ function App() {
           <form onSubmit={handleTrigger} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Local Repository Path
+                Backend Server URL
+              </label>
+              <input 
+                type="text" 
+                className="glass-input" 
+                value={backendUrl}
+                onChange={(e) => setBackendUrl(e.target.value)}
+                placeholder="e.g., http://localhost:8000"
+                required
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                Target Repository Path (Local or Server)
               </label>
               <input 
                 type="text" 
@@ -125,7 +145,7 @@ function App() {
             
             <div>
               <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                GitHub Repository (for Pull Requests)
+                GitHub Repository (Owner/Repo Name)
               </label>
               <input 
                 type="text" 
