@@ -1,44 +1,33 @@
-# Module Level Documentation
+# Module Level Documentation: DocuMind AI
 
-This document explains the core modules and files within the **India Restaurant Finder** repository.
+This document explains the core modules and internal logic of the **DocuMind AI** documentation agent.
 
-## `app.py`
-**Purpose**: The main entry point for the Streamlit web application.
-- **Initialization**: Configures the Streamlit page layout and custom CSS for aesthetics.
-- **RAG Engine Initialization**: Defines `@st.cache_resource def init_rag()` to ensure the RAG engine (which loads embedding models and indexes data) is only instantiated once per session/server run.
-- **Sidebar Navigation**: Renders the sidebar with predefined example queries, coverage info, and tech stack details. Example queries directly populate the session state.
-- **Chat Interface**: Initializes `st.session_state.messages` to track conversation history.
-- **Execution Loop**: Captures user input via `st.chat_input`, sends the query to the `rag.query()` method, streams the response utilizing a simulated typing effect (`time.sleep(0.02)`), and appends it to the chat history.
+## `agent.py`
+**Purpose**: The central orchestration layer.
+- `start_analysis_loop()`: Listens for incoming webhook events or scheduled cron jobs.
+- `process_repository(repo_url)`: Coordinates the flow from scanning the repo, updating the vector memory, generating the docs, and committing the changes.
+- **Agentic Behavior**: Contains the decision-making logic to determine *if* a documentation update is required based on the significance of the code changes.
 
-## `rag_engine.py`
-**Purpose**: Encapsulates the Retrieval-Augmented Generation logic.
+## `scanner.py`
+**Purpose**: Codebase ingestion and parsing.
+- `analyze_structure(path)`: Recursively maps the directory structure, identifying key architectural layers (e.g., frontend, backend, database).
+- `extract_ast(file)`: Parses Python/JS/TS files into Abstract Syntax Trees to extract function signatures, classes, and docstrings.
+- `detect_diffs(old_commit, new_commit)`: Analyzes Git diffs to isolate modified logic, newly added modules, and deleted components.
 
-### Class: `RAGEngine`
-- `__init__()`: Initializes the Groq LLM client, Azure Cognitive Search client, and SentenceTransformer model (`all-MiniLM-L6-v2`). Automatically triggers `_load_and_index_data()` upon instantiation.
-- `_load_google_sheet_data()`: Uses `gspread` and `oauth2client` to authenticate and fetch the live dataset from a Google Sheet. Converts the response into a Pandas DataFrame.
-- `_load_and_index_data()`: Iterates through the DataFrame, constructs a descriptive text block for each restaurant, generates an embedding vector, and maps the record to the Azure Search schema. Uploads the documents to Azure via `search_client.upload_documents`.
-- `query(user_query: str) -> str`: 
-  1. Vectorizes the `user_query`.
-  2. Constructs a `VectorizedQuery` object targeting the `contentVector` field.
-  3. Executes a hybrid search against Azure Cognitive Search (`search_text=user_query` + `vector_queries=[vector_query]`), requesting the top 5 results.
-  4. Concatenates the retrieved documents into a context block.
-  5. Passes the context and user query to Groq (`llama-3.3-70b-versatile`) with a predefined `system_prompt` instructing it to act as a warm local services assistant.
-  6. Returns the LLM response string.
+## `generator.py`
+**Purpose**: Interfaces with the LLM to write developer-friendly documentation.
+- `generate_readme(context)`: Synthesizes high-level project goals, setup instructions, and tech stack into a `README.md`.
+- `generate_api_specs(routes)`: Formats extracted API routes into standardized markdown, including endpoints, methods, parameters, request/response examples, and error cases.
+- `update_stale_docs(existing_doc, changes)`: Intelligently merges new information into existing documentation without destroying custom developer notes.
 
-## `prepare_data.py`
-**Purpose**: Ingests, cleans, and uploads the raw Swiggy dataset to Google Sheets.
-- `prepare_swiggy_data()`: Reads `swiggy_file.csv` using Pandas. It handles missing columns by checking for multiple possible names (e.g., `city`, `Location`, `Area`). It sorts the data by rating (descending), handles missing values, and builds a standardized DataFrame with columns: `City`, `Name`, `Category`, `Area`, `Description`, `Rating`, `Phone`, `Price`, and `Google_Maps_Link`.
-- `upload_to_google_sheets(df)`: Authenticates using a service account (`credentials.json`), connects to the target Google Sheet (`1lSobLES_B61sjYOl3Ko32ig_nktMtocmg7Ksvgl-dL4`), clears existing contents, and pushes the cleaned DataFrame.
+## `memory.py`
+**Purpose**: Manages long-term repository context.
+- `embed_codebase()`: Chunks codebase files and converts them into embeddings.
+- `semantic_search(query)`: Allows the agent (or users via a Q&A interface) to find relevant code snippets and architecture patterns.
+- `track_architecture_evolution()`: Compares current architectural graphs with historical ones to automatically generate migration notes and changelogs.
 
-## `setup_azure_index.py`
-**Purpose**: Defines the Azure Search Index schema and provisions the index.
-- `create_search_index()`: 
-  1. Retrieves Azure endpoint and key from environment variables.
-  2. Defines the fields schema using `SimpleField` and `SearchableField`.
-  3. Specifies a `SearchField` named `contentVector` of type `Collection(Edm.Single)` with `vector_search_dimensions=384` (matching the `SentenceTransformer` output).
-  4. Configures `VectorSearch` with `HnswAlgorithmConfiguration`.
-  5. Uses `SearchIndexClient.create_or_update_index()` to provision the index on Azure.
-
-## Configuration Files
-- `.env`: (Not committed) Stores API keys and endpoints (`AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KEY`, `GROQ_API_KEY`, `GOOGLE_SHEET_ID`, `GOOGLE_CREDENTIALS_PATH`).
-- `requirements.txt`: Python package dependencies (Streamlit, Groq, Azure SDKs, Pandas, SentenceTransformers, etc.).
+## `git_manager.py`
+**Purpose**: Handles repository version control operations.
+- `clone_and_branch()`: Creates a secure workspace for documentation updates.
+- `commit_changes(files_changed)`: Formats commit messages clearly (e.g., `docs: auto-update API specifications for v2.0`).
+- `create_pull_request()`: Interfaces with the GitHub API to open a PR, complete with a summary of the documentation changes, affected modules, and any breaking changes detected.

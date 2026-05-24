@@ -11,14 +11,13 @@ DocuMind AI is an intelligent agent designed to reduce developer documentation e
 - **Continuous Synchronization:** Detects when code changes and intelligently updates only the stale sections of documentation.
 - **Developer-Focused:** Explains code with concise summaries, examples, and technical clarity.
 
-## 📂 Example Output
+## 📂 Project Documentation
 
-This repository contains sample documentation generated autonomously by DocuMind AI for an external Streamlit RAG application (`india-restaurant-finder`). 
+This repository contains the architectural design and internal specifications for the DocuMind AI agent itself:
 
-Check out the generated documentation:
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture, data flow, and components.
-- [MODULES.md](./MODULES.md) - Module-level explanations and code breakdowns.
-- [API_SPECS.md](./API_SPECS.md) - API integrations and specifications.
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture, agentic data flow, and components.
+- [MODULES.md](./MODULES.md) - Internal module explanations and code breakdown (`agent.py`, `scanner.py`, etc.).
+- [API_SPECS.md](./API_SPECS.md) - Specifications for external API integrations (GitHub Webhooks, LLM APIs, Vector DB).
 
 ---
 
